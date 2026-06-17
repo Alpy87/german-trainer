@@ -1,0 +1,46 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:15-alpine
+    container_name: language-trainers-db
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+      - ./init-db.sql:/docker-entrypoint-initdb.d/init.sql
+    restart: unless-stopped
+
+  german-trainer:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: german-trainer
+    ports:
+      - "3000:3000"
+    environment:
+      - DATABASE_URL=postgresql://postgres:password@postgres:5432/germandb?schema=public
+      - MINIMAX_API_KEY=${MINIMAX_API_KEY}
+    depends_on:
+      - postgres
+    restart: unless-stopped
+
+  tagalog-trainer:
+    build:
+      context: ../tagalog-trainer
+      dockerfile: Dockerfile
+    container_name: tagalog-trainer
+    ports:
+      - "3001:3000"
+    environment:
+      - DATABASE_URL=postgresql://postgres:password@postgres:5432/tagalogdb?schema=public
+      - MINIMAX_API_KEY=${MINIMAX_API_KEY}
+    depends_on:
+      - postgres
+    restart: unless-stopped
+
+volumes:
+  postgres-data:

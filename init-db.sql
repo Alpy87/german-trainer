@@ -1,0 +1,2 @@
+CREATE DATABASE germandb;
+CREATE DATABASE tagalogdb;
